@@ -32,7 +32,7 @@ public class PizzasController {
 
     @GetMapping
     public ResponseEntity<?> getAllPizzas() {
-        return ResponseEntity.ok().body(this.pizzaService.getPizzas());
+        return ResponseEntity.ok().body(this.pizzaService.getAllPizzas());
     }
 
     @ExceptionHandler(BindException.class)

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.pizzahut.pizzamaker.controller.payload.IngredientPayload;
-import ru.pizzahut.pizzamaker.service.IngredientServiceOld;
 import ru.pizzahut.pizzamaker.service.IngredientService;
 
 @RestController

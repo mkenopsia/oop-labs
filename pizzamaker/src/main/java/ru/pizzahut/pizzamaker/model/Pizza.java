@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "t_pizzas", schema = "pizzamaker")
+@Table(name = "t_pizzas", schema = "pizza")
 public class Pizza {
 
     @Id
@@ -26,7 +25,7 @@ public class Pizza {
     @ManyToMany
     @JoinTable(
             name = "t_pizza_ingredients",
-            schema = "pizzamaker",
+            schema = "pizza",
             joinColumns = @JoinColumn(name = "pizza_id"),
             inverseJoinColumns = @JoinColumn(name = "ingredient_id")
     )

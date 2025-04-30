@@ -5,14 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "t_pizza_bases", schema = "pizzamaker")
+@Table(name = "t_pizza_bases", schema = "pizza")
 public class PizzaBase {
 
     @Id

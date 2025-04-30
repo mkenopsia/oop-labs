@@ -1,58 +1,53 @@
 package ru.pizzahut.pizzamaker.service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.pizzahut.pizzamaker.model.Pizza;
 import ru.pizzahut.pizzamaker.controller.payload.PizzaPayload;
 import ru.pizzahut.pizzamaker.model.Ingredient;
+import ru.pizzahut.pizzamaker.model.Pizza;
 import ru.pizzahut.pizzamaker.model.PizzaBase;
-import ru.pizzahut.pizzamaker.repo.IngredientsRepositoryOld;
+import ru.pizzahut.pizzamaker.repo.IngredientsRepository;
+import ru.pizzahut.pizzamaker.repo.PizzaBaseRepository;
 import ru.pizzahut.pizzamaker.repo.PizzaRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
 public class PizzaService {
 
     private final PizzaRepository pizzaRepository;
-    private final IngredientsRepositoryOld ingredientsRepositoryOld;
-    private final PizzaBaseService pizzaBaseService;
-//    private final PizzaBoardService pizzaBoardService;
-//    private final PizzaSizeService pizzaSizeService;
+    private final IngredientsRepository ingredientsRepository;
+    private final PizzaBaseRepository pizzaBaseRepository;
+
 
     public void save(PizzaPayload payload) {
-        Pizza pizza = processPayload(payload, new Pizza());
-        pizzaRepository.save(pizza);
+        Pizza pizza = processPayload(payload);
+        this.pizzaRepository.save(pizza);
     }
 
-    public void updatePizza(Integer id, PizzaPayload payload) {
-        Pizza pizza = processPayload(payload, new Pizza());
-        this.pizzaRepository.update(id, payload, pizza);
-    }
-
-    public Pizza getPizzaById(Integer id) {
-        return this.pizzaRepository.getPizzaById(id)
-                .orElseThrow(NoSuchElementException::new);
-    }
-
-    public List<Pizza> getPizzas() {
-        return this.pizzaRepository.getPizzas();
-    }
-
-    private Pizza processPayload(PizzaPayload payload, Pizza pizza) {
+    private Pizza processPayload(PizzaPayload payload) {
+        Pizza pizza = new Pizza();
         pizza.setName(payload.name());
-        List<Ingredient> ingredients = ingredientsRepositoryOld.getAllIngredients().stream()
+
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredientsRepository.findAll().forEach(ingredients::add);
+        ingredients = ingredients.stream()
                 .filter(pzz -> payload.ingredients().contains(pzz.getName()))
-                .collect(Collectors.toList());
+                .toList();
 
         if(ingredients.size() != payload.ingredients().size()) {
             throw new IllegalArgumentException("Одного из ингридиентов нет в базе");
         }
 
-        PizzaBase base = (pizzaBaseService.findPizzaBaseByType(payload.base()));
+        pizza.setIngredients(ingredients);
+
+        PizzaBase base = pizzaBaseRepository.findByType((payload.base()));
         pizza.setPizzaBase(base);
 
 //        PizzaBoard pizzaBoard = (pizzaBoardService.findPizzaBoardByType(payload.board()));
@@ -80,8 +75,18 @@ public class PizzaService {
         return price;
     }
 
-    public Pizza getPizzaByName(String name) {
-        return this.pizzaRepository.getPizzaByName(name)
+    public Iterable<Pizza> getAllPizzas() {
+        return this.pizzaRepository.findAll();
+    }
+
+    public void updatePizza(Integer id, PizzaPayload pizzaPayload) {
+        Pizza pizza = processPayload(pizzaPayload);
+        pizza.setId(id);
+        this.pizzaRepository.save(pizza);
+    }
+
+    public Pizza getPizzaById(Integer id) {
+        return this.pizzaRepository.findById(id)
                 .orElseThrow(NoSuchElementException::new);
     }
 }

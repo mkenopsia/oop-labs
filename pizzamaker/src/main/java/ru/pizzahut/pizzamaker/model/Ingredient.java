@@ -5,14 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "t_ingredients", schema = "pizzamaker")
+@Table(name = "t_ingredients", schema = "pizza")
 public class Ingredient {
 
     @Id

@@ -3,9 +3,7 @@ package ru.pizzahut.pizzamaker.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.pizzahut.pizzamaker.controller.payload.IngredientPayload;
 import ru.pizzahut.pizzamaker.controller.payload.PizzaBasePayload;
-import ru.pizzahut.pizzamaker.repo.PizzaBaseRepository;
 import ru.pizzahut.pizzamaker.service.PizzaBaseService;
 
 @RestController

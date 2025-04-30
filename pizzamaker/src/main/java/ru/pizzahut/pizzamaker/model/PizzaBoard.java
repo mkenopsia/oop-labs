@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "pizza_boards", schema = "pizzamaker")
+@Table(name = "t_pizza_boards", schema = "pizza")
 public class PizzaBoard {
 
     @Id
@@ -22,18 +22,21 @@ public class PizzaBoard {
     @ManyToMany
     @JoinTable(
             name = "t_pizza_board_ingredients",
-            schema = "pizzamaker",
+            schema = "pizza",
             joinColumns = @JoinColumn(name = "pizza_board_id"),
             inverseJoinColumns = @JoinColumn(name = "ingredient_id")
     )
     private List<Ingredient> ingredients = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
+    @ElementCollection
+    @CollectionTable(
             name = "t_pizza_board_available_pizzas",
-            schema = "pizzamaker",
-            joinColumns = @JoinColumn(name = "pizza_board_id"),
-            inverseJoinColumns = @JoinColumn(name = "pizza_id")
+            schema = "pizza",
+            joinColumns = @JoinColumn(name = "pizza_board_id")
     )
-    private List<Pizza> availablePizzas = new ArrayList<>();
+    @Column(name = "pizza_id")
+    private List<Integer> availablePizzaIds = new ArrayList<>();
+
+    @Column(name = "price",  nullable = false, precision = 2)
+    private Double price;
 }

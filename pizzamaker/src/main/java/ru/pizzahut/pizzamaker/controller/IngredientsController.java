@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.pizzahut.pizzamaker.controller.payload.IngredientPayload;
 import ru.pizzahut.pizzamaker.service.IngredientService;
-import ru.pizzahut.pizzamaker.service.IngredientServiceOld;
 
 @Controller
 @RequiredArgsConstructor
