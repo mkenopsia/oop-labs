@@ -1,33 +1,43 @@
 package ru.pizzahut.pizzamaker.repo;
 
 import org.springframework.stereotype.Repository;
-import ru.pizzahut.pizzamaker.controller.payload.PizzaBoardPayload;
-import ru.pizzahut.pizzamaker.model.pizzaIngredients.Type.PizzaBoard;
-import ru.pizzahut.pizzamaker.model.pizzaIngredients.Type.StandardPizzaBoards;
+import ru.pizzahut.pizzamaker.model.PizzaBoard;
+import ru.pizzahut.pizzamaker.service.IngredientServiceOld;
+import ru.pizzahut.pizzamaker.service.PizzaService;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Repository
 public class PizzaBoardRepository {
 
-    private List<PizzaBoard> pizzaBases;
+    private final IngredientServiceOld ingredientServiceOld;
+    private final PizzaService pizzaService;
+    private final List<PizzaBoard> pizzaBoards;
+    private Integer id = 0;
 
-    public PizzaBoardRepository() {
-        this.pizzaBases = Arrays.stream(StandardPizzaBoards.values())
-                .map(board -> new PizzaBoard(board.getType(), board.getPrice()))
-                .collect(Collectors.toList());
+    public PizzaBoardRepository(IngredientServiceOld ingredientServiceOld, PizzaService pizzaService) {
+        this.ingredientServiceOld = ingredientServiceOld;
+        this.pizzaService = pizzaService;
+        pizzaBoards = new ArrayList<>();
+        fillRepo(pizzaBoards);
     }
 
-    public Optional<PizzaBoard> findPizzaBoardByType(String type) {
-        return pizzaBases.stream().filter(i -> i.getType().equals(type)).findFirst();
+    public Optional<PizzaBoard> findPizzaBoardById(Integer id) {
+        return pizzaBoards.stream().filter(i -> i.getId().equals(id)).findFirst();
     }
 
-    public void save(PizzaBoardPayload pizzaBoardPayload) {
-        PizzaBoard pizzaBoard = new PizzaBoard(pizzaBoardPayload.type(), pizzaBoardPayload.price());
-        this.pizzaBases.add(pizzaBoard);
+//    public void save(PizzaBoardPayload pizzaBoardPayload) {
+//        PizzaBoard pizzaBoard = new PizzaBoard(pizzaBoardPayload.type(), pizzaBoardPayload.price());
+//        this.pizzaBoards.add(pizzaBoard);
+//    }
+
+    public List<PizzaBoard> getPizzaBoards() {
+        return this.pizzaBoards;
     }
 
+    private void fillRepo(List<PizzaBoard> pizzaBoards) {
+        pizzaBoards.add(new PizzaBoard(id++,
+                List.of(ingredientServiceOld.findIngredientByName("Бекон")),
+                List.of(pizzaService.getPizzaByName("Пепперони"), pizzaService.getPizzaByName("Маргарита"))));
+    }
 }

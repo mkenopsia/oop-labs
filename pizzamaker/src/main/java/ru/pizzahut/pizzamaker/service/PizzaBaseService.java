@@ -3,7 +3,7 @@ package ru.pizzahut.pizzamaker.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.pizzahut.pizzamaker.controller.payload.PizzaBasePayload;
-import ru.pizzahut.pizzamaker.model.pizzaIngredients.Type.PizzaBase;
+import ru.pizzahut.pizzamaker.model.PizzaBase;
 import ru.pizzahut.pizzamaker.repo.PizzaBaseRepository;
 
 import java.util.List;

@@ -1,10 +1,10 @@
 package ru.pizzahut.pizzamaker.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.pizzahut.pizzamaker.controller.payload.IngredientPayload;
+import ru.pizzahut.pizzamaker.service.IngredientServiceOld;
 import ru.pizzahut.pizzamaker.service.IngredientService;
 
 @RestController
@@ -29,7 +29,7 @@ public class IngredientController {
 
     @GetMapping()
     public ResponseEntity<?> getProduct(@PathVariable("ingredientId") Integer id) {
-        return ResponseEntity.ok().body(this.ingredientService.findIngredientById(id));
+        return ResponseEntity.ok().body(this.ingredientService.findByIngredientId(id));
     }
 
 }

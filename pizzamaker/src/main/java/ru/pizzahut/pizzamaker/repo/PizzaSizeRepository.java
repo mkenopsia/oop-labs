@@ -1,13 +1,12 @@
 package ru.pizzahut.pizzamaker.repo;
 
 import org.springframework.stereotype.Repository;
-import ru.pizzahut.pizzamaker.model.pizzaIngredients.Type.PizzaBase;
-import ru.pizzahut.pizzamaker.model.pizzaIngredients.Type.PizzaSize;
-import ru.pizzahut.pizzamaker.model.pizzaIngredients.Type.StandardPizzaBases;
-import ru.pizzahut.pizzamaker.model.pizzaIngredients.Type.StandardPizzaSize;
+import ru.pizzahut.pizzamaker.model.PizzaSize;
+import ru.pizzahut.pizzamaker.model.pizzaIngredients.StandardPizzaSize;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -23,5 +22,9 @@ public class PizzaSizeRepository {
 
     public List<PizzaSize> getPizzaSizes() {
         return this.pizzaSizes;
+    }
+
+    public Optional<PizzaSize> findPizzaBaseByType(String type) {
+        return pizzaSizes.stream().filter(i -> i.getType().equals(type)).findFirst();
     }
 }

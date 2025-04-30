@@ -11,7 +11,7 @@ public record PizzaPayload(
         @NotBlank(message = "{pizza.error.blank_name}")
         String name,
         @NotNull(message = "{pizza.error.empty_ingredients}")
-        @Size(min = 3, max = 12, message = "{pizza.error.ivalid_ingredients_num}")
+        @Size(min = 1, max = 12, message = "{pizza.error.ivalid_ingredients_num}")
         List<String> ingredients,
         @NotBlank(message = "{pizza.error.blank_pizzabase}")
         String base,

@@ -2,9 +2,8 @@ package ru.pizzahut.pizzamaker.repo;
 
 import org.springframework.stereotype.Repository;
 import ru.pizzahut.pizzamaker.controller.payload.PizzaBasePayload;
-import ru.pizzahut.pizzamaker.model.Pizza;
-import ru.pizzahut.pizzamaker.model.pizzaIngredients.Type.PizzaBase;
-import ru.pizzahut.pizzamaker.model.pizzaIngredients.Type.StandardPizzaBases;
+import ru.pizzahut.pizzamaker.model.PizzaBase;
+import ru.pizzahut.pizzamaker.model.pizzaIngredients.StandardPizzaBases;
 
 import java.util.Arrays;
 import java.util.List;

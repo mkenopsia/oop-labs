@@ -1,4 +1,4 @@
-package ru.pizzahut.pizzamaker.model.pizzaIngredients.Type;
+package ru.pizzahut.pizzamaker.model.pizzaIngredients;
 
 import lombok.Getter;
 

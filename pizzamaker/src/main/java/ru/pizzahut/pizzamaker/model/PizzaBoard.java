@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,29 +12,28 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "t_pizzas", schema = "pizzamaker")
-public class Pizza {
+@Table(name = "pizza_boards", schema = "pizzamaker")
+public class PizzaBoard {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
-
     @ManyToMany
     @JoinTable(
-            name = "t_pizza_ingredients",
+            name = "t_pizza_board_ingredients",
             schema = "pizzamaker",
-            joinColumns = @JoinColumn(name = "pizza_id"),
+            joinColumns = @JoinColumn(name = "pizza_board_id"),
             inverseJoinColumns = @JoinColumn(name = "ingredient_id")
     )
     private List<Ingredient> ingredients = new ArrayList<>();
 
-    @OneToOne
-    @JoinColumn(name = "pizza_base_id", nullable = false)
-    private PizzaBase pizzaBase;
-
-    @Column(name = "price", nullable = false, precision = 2)
-    private Double price;
+    @ManyToMany
+    @JoinTable(
+            name = "t_pizza_board_available_pizzas",
+            schema = "pizzamaker",
+            joinColumns = @JoinColumn(name = "pizza_board_id"),
+            inverseJoinColumns = @JoinColumn(name = "pizza_id")
+    )
+    private List<Pizza> availablePizzas = new ArrayList<>();
 }

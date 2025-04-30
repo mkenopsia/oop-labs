@@ -1,6 +1,5 @@
-package ru.pizzahut.pizzamaker.model.pizzaIngredients.Type;
+package ru.pizzahut.pizzamaker.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
