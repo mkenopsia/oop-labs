@@ -19,7 +19,7 @@ CREATE TABLE ordering.t_pizza_for_order
     order_id int          not null,
     name     varchar(100) not null,
     size     varchar(10)  not null,
-    board_id int          not null,
+    board_id int,
     constraint fk_pizza_order foreign key (order_id) references ordering.t_pizza_order (id) on delete cascade,
     constraint fk_pizza_board foreign key (board_id) references pizza.t_pizza_boards (id) on delete cascade
 );
