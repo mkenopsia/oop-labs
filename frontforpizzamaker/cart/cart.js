@@ -4,10 +4,12 @@ document.getElementById("submit-order").addEventListener("click", makeOrder)
 let modalWindow = document.getElementById("modal-window");
 
 class PizzaForOrder {
-    constructor(name, size, pizzaBoardId, ingredients) {
+    constructor(id, name, size, pizzaBoardId, pizzaBaseId, ingredients) {
+        this.id = id;
         this.name = name;
         this.size = size;
         this.pizzaBoardId = pizzaBoardId;
+        this.pizzaBaseId = pizzaBaseId;
         this.ingredients = ingredients;
     }
 }
@@ -35,7 +37,7 @@ function renderCart() {
 
     for(let pizza of cart) {
         let card = document.createElement('div'); 
-        let pizzaPrice = ((pizza.price + pizza.pizzaBoard.price) * getCoef(pizza));
+        let pizzaPrice = pizza.price;
         ORDERSUM += pizzaPrice;
         card.innerHTML = `
             <div class="pizza-card" data-id="${pizza.id}">
@@ -67,16 +69,6 @@ function renderCart() {
             deletePizzaFromCart(pizzaId);
         });
     });
-}
-
-function getCoef(pizza) {
-    if(pizza.size === "25см") {
-        return 0.9;
-    } else if(pizza.size === "30см") {
-        return 1;
-    } else {
-        return 1.2;
-    }
 }
 
 function getCart() {
@@ -123,7 +115,13 @@ function makeOrder() {
     let pizzasForOrder = [];
     for(let pizzaInCart of getCart()) {
         pizzasForOrder.push(
-            new PizzaForOrder(pizzaInCart.name, pizzaInCart.size, pizzaInCart.pizzaBoardId, pizzaInCart.ingredientNames));
+            new PizzaForOrder(
+                pizzaInCart.id,
+                 pizzaInCart.name,
+                  pizzaInCart.size,
+                   pizzaInCart.pizzaBoard.id,
+                    pizzaInCart.pizzaBase.id,
+                     pizzaInCart.ingredientNames));
     }
     let order = new Order(date, status, comment, price, pizzasForOrder);
     let orderJsonRequest = JSON.stringify(order);

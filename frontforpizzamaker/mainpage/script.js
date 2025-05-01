@@ -62,6 +62,10 @@ class PizzaBaseApiService {
         return this.pizzaBases.find(pizza => pizza.id === id);
     }
 
+    getPizzaBaseByType(type) {
+        return this.pizzaBases.find(pizza => pizza.type === type);
+    }
+
     getAllPizzaBases() {
         return this.pizzaBases;
     }
@@ -106,14 +110,31 @@ class Pizza {
 }
   
 class PizzaApiService {
-    constructor(baseUrl = 'http://localhost:8080/pizzamaker') {
-        this.baseUrl = baseUrl;
+    constructor() {
         this.pizzas = [];
     }
   
     async fetchPizzas() {
         try {
-            const response = await fetch(`${this.baseUrl}/pizzas`);
+            const response = await fetch('http://localhost:8080/pizzamaker/pizzas');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const pizzasJson = await response.json();
+        this.pizzas = pizzasJson.map(Pizza.fromJson);
+        return this.pizzas;
+        
+        } catch (error) {
+            console.error('Ошибка при загрузке пицц:', error);
+            throw error;
+        }
+    }
+
+    async fetchFilteredPizzas(filter) {
+        try {
+            const response = await fetch('http://localhost:8080/pizzamaker/pizzas' + "/" + filter);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -235,15 +256,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.setItem("ingredients", JSON.stringify(ingredients));
         localStorage.setItem("pizzaBases", JSON.stringify(pizzaBases));
 
-        renderPizzas(pizzas, pizzaService);
+        renderPizzas(pizzas);
 
     } catch (error) {
         console.error('Не удалось загрузить меню:', error);
     }
 });
 
-function renderPizzas(pizzas, pizzaService) {
-    const container = document.getElementById('pizzas-container');
+document.getElementById("do-filter").addEventListener("click", render);
+
+async function render() {
+    console.log(1);
+    let filter = document.getElementById("filter").value;
+    if(filter === null || filter.trim() === "") {
+        try {
+            renderPizzas(await pizzaService.fetchPizzas());
+        } catch (error) {
+            console.error('Не удалось загрузить меню:', error);
+        }
+    } else {
+        try {
+            renderPizzas(await pizzaService.fetchFilteredPizzas(filter));
+        } catch (error) {
+            console.error('Не удалось загрузить меню:', error);
+        }
+    }
+}
+
+function renderPizzas(pizzas) {
+    let container = document.getElementById('pizzas-container');
+    container.innerHTML = '';
     if (!container) return;
 
     container.innerHTML = pizzas.map(pizza => `
@@ -283,6 +325,8 @@ function getCart() {
 let modalWindow = document.getElementById("modal-window");
 let addPizzaButton = document.getElementById("add-pizza-to-cart").addEventListener("click", addToCart);
 
+let doublePizzaIngredients = new Map();
+
 function showModalWindow(pizzaId) { //<option value="Стандартный">Стандартный</option>
     let boardInput = document.getElementById("board-input")
     boardInput.innerHTML = '';
@@ -299,6 +343,54 @@ function showModalWindow(pizzaId) { //<option value="Стандартный">С�
             boardInput.appendChild(option);
         }
     }
+
+    let ingredientList = document.getElementById("multiply-ingredient-list");
+    ingredientList.innerHTML = '';
+
+    let ingredients = pizzaService.getPizzaById(pizzaId).ingredientNames;
+
+    for(let i = 0; i < ingredients.length; i++) {
+        let ingr = ingredients[i];
+        const li = document.createElement("li");
+
+        let count = 1;
+        doublePizzaIngredients.set(ingr, count)
+        let nameSpan = document.createElement("span");
+        nameSpan.textContent = ingr;
+
+        let controls = document.createElement("div");
+        controls.className = "counter-controls";
+
+        let countSpan = document.createElement("span");
+        countSpan.className = "counter";
+        countSpan.textContent = count;
+
+        let minusBtn = document.createElement("button");
+        minusBtn.textContent = "-";
+        minusBtn.addEventListener("click", () => {
+            if (count > 1) {
+                count--;
+                countSpan.textContent = count;
+                doublePizzaIngredients.set(ingr, count);
+            }
+        });
+
+        let plusBtn = document.createElement("button");
+        plusBtn.textContent = "+";
+        plusBtn.addEventListener("click", () => {
+            count++;
+            countSpan.textContent = count;
+            doublePizzaIngredients.set(ingr, count);
+        });
+
+        controls.appendChild(minusBtn);
+        controls.appendChild(countSpan);
+        controls.appendChild(plusBtn);
+
+        li.appendChild(nameSpan);
+        li.appendChild(controls);
+        ingredientList.appendChild(li);
+    }
     
     modalWindow.style.display = 'flex'
 }
@@ -308,7 +400,7 @@ function addToCart() {
     temp = [];
     let size = document.getElementById("size-input").value;
     let inputBoard = document.getElementById("board-input").value;
-    let board = JSON.parse(localStorage.getItem("pizzaBoards")).find(b  => b.name === inputBoard);
+    let board = pizzaService.getAllPizzas().find(b  => b.name === inputBoard);
 
     if(board === undefined || inputBoard === "Стандартный") {
         pizza.pizzaBoard = {name : "Стандартный", price: 0, id: null};
@@ -316,14 +408,34 @@ function addToCart() {
         pizza.pizzaBoard = board;
     }
 
+    let res = processMultipliedCaseIngredients(doublePizzaIngredients);
+
     pizza.size = size;
-    pizza.ingredients = pizza.ingredientNames;
+    pizza.ingredientNames = res[0];
+    pizza.price = (pizza.price + res[1]) * ((size === "25см") ? 0.9 : ((size === "35см") ? 1.2 : 1));
+    
     const cart = getCart();
     cart.push(pizza);
     console.log(cart);
     localStorage.setItem("cart", JSON.stringify(cart));
     modalWindow.style.display = 'none'
 }
+
+function processMultipliedCaseIngredients(doublePizzaIngredients) {
+    let ingredients = [];
+    let price = 0;
+    for(const [key, value] of doublePizzaIngredients) {
+        if(value > 1) { 
+            ingredients.push(key + ' x' + value);
+            price += ingredientService.getIngredientByName(key).price * (value - 1);
+        }
+        else ingredients.push(key);
+    }
+
+    return [ingredients, price];
+}
+
+
 
 document.getElementById("add-AB-pizza").addEventListener("click", showModalABPizzaWindow);
 document.getElementById("add-AB-pizza-to-cart").addEventListener("click", addABPizzaToCart);
@@ -384,16 +496,17 @@ function addABPizzaToCart() {
     }
 
     for(let ingr of pizzaB.ingredients.map(Ingredient.fromJson)) {
-        ingrNames.push(ingr.name);
+        if(!ingrNames.includes(ingr.name)) {
+            ingrNames.push(ingr.name);
+        }
     }
 
     let pizza = new Pizza();
+    pizza.id = Math.floor(Math.random()*1000) + 200;  
     pizza.name = pizzaA.name + "+" + pizzaB.name;
     pizza.ingredientNames = ingrNames;
     pizza.size = size;
-    let pizzaBase = new PizzaBase();
-    pizzaBase.type = pizzaA.pizzaBase.type + " + " +  pizzaB.pizzaBase.type;
-    pizza.pizzaBase = pizzaBase;
+    pizza.pizzaBase = pizzaA.pizzaBase;
     pizza.price = (pizzaA.price + pizzaB.price) / 2;
 
     if(board === undefined || inputBoard === "Стандартный") {
@@ -402,6 +515,7 @@ function addABPizzaToCart() {
         pizza.pizzaBoard = board;
     }
 
+    pizza.price = pizza.price + board.price;
 
     console.log(pizza);
     const cart = getCart();
@@ -425,8 +539,6 @@ function showModalCustomPizzaWindow() {
     ingredientList.innerHTML = '';
 
     let ingredients = ingredientService.ingredients;
-
-
 
     for(let i = 0; i < ingredients.length; i++) {
         let ingr = ingredients[i];
@@ -485,7 +597,7 @@ function showModalCustomPizzaWindow() {
 
     for(const board of pizzaBoardService.getAllPizzaBoards()) {
         let option = document.createElement("option");
-        option.value = board.name;
+        option.value = board.id;
         option.textContent = board.name + " " + board.price + " руб";
         boardInput.appendChild(option);
     }
@@ -516,7 +628,8 @@ function addCustomPizzaToCart() {
     let size = document.getElementById("custom-pizza-size-input").value;
     let inputBoardId = parseInt(document.getElementById("custom-pizza-board").value);
     let inputBase = document.getElementById("custom-pizza-base").value;
-    let board = pizzaBoardService.getAllPizzaBoards().find(b  => b.name === inputBoardId);
+    let board = pizzaBoardService.getAllPizzaBoards().find(b  => b.id === inputBoardId);
+    let pizzaBase = pizzaBaseService.getPizzaBaseByType(inputBase);
 
     let ingrNames = []
 
@@ -527,23 +640,23 @@ function addCustomPizzaToCart() {
         } else {
             name = key;
         }
-        ingrNames.push(key);
+        ingrNames.push(name);
     }
 
     let pizza = new Pizza();
+    pizza.id = Math.floor(Math.random()*1000) + 200;
     pizza.name = nameInput;
     pizza.ingredientNames = ingrNames;
     pizza.size = size;
-    let pizzaBase = new PizzaBase();
-    pizzaBase.type = inputBase;
     pizza.pizzaBase = pizzaBase;
-    pizza.price = evalPrice(customPizzaIngredients);
-
-    if(board === undefined || inputBoard === "Стандартный") {
+    
+    if(board === undefined) {
         pizza.pizzaBoard = {name : "Стандартный", price: 0, id: null};
     } else {
         pizza.pizzaBoard = board;
     }
+
+    pizza.price = (evalPrice(customPizzaIngredients) + pizzaBase.price + pizza.pizzaBoard.price) * ((size === "25см") ? 0.9 : ((size === "35см") ? 1.2 : 1));
 
     console.log(pizza);
     const cart = getCart();

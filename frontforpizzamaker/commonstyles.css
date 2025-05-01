@@ -128,3 +128,18 @@ ul {
     min-width: 20px;
     text-align: center;
 }
+
+.search-filter-container {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.filter-input {
+    width: 40%;
+    height: 2vh;
+    border: 2px brown solid;
+    border-radius: 10px;
+}

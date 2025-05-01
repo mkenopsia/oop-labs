@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(name = "t_ingredients", schema = "pizza")
-public class Ingredient {
+public class Ingredient implements Cloneable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,4 +21,9 @@ public class Ingredient {
 
     @Column(name = "price", nullable = false, precision = 2)
     private Double price;
+
+    @Override
+    public Ingredient clone() throws CloneNotSupportedException {
+        return new Ingredient(this.id, this.name, this.price);
+    }
 }
