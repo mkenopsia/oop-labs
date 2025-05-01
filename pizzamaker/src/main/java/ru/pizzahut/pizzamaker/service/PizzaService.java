@@ -50,17 +50,6 @@ public class PizzaService {
         PizzaBase base = pizzaBaseRepository.findByType((payload.base()));
         pizza.setPizzaBase(base);
 
-//        PizzaBoard pizzaBoard = (pizzaBoardService.findPizzaBoardByType(payload.board()));
-//        pizza.setPizzaBoard(pizzaBoard);
-
-
-//        PizzaSize pizzaSize = (this.pizzaSizeService.getAllPizzaSizes().stream()
-//                .filter(size -> size.getType().equals(payload.size()))
-//                .findFirst()
-//                .orElse(new PizzaSize("30см", 1.0)));
-//        pizza.setPizzaSize(pizzaSize);
-
-
         pizza.setPrice(evalPrice(ingredients, base));
 
         return pizza;
@@ -70,8 +59,6 @@ public class PizzaService {
         Double price = 0.0;
         price += (ingredients.stream().mapToDouble(Ingredient::getPrice).sum());
         price += base.getPrice();
-//        price += pizzaBoard.getPrice();
-//        price *= pizzaSize.getCoef();
         return price;
     }
 

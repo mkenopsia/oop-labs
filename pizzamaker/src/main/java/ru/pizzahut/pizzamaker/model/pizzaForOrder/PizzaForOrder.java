@@ -1,14 +1,12 @@
 package ru.pizzahut.pizzamaker.model.pizzaForOrder;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.pizzahut.pizzamaker.model.Ingredient;
-import ru.pizzahut.pizzamaker.model.Pizza;
 import ru.pizzahut.pizzamaker.model.PizzaBoard;
-import ru.pizzahut.pizzamaker.model.PizzaSize;
-import ru.pizzahut.pizzamaker.model.order.Order;
 
 import java.util.List;
 
@@ -43,6 +41,7 @@ public class PizzaForOrder {
             joinColumns = @JoinColumn(name = "pizza_id"),
             inverseJoinColumns = @JoinColumn(name = "ingredient_id")
     )
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private List<Ingredient> ingredients;
 
 }

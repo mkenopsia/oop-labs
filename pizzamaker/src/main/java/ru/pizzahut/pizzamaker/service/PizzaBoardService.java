@@ -35,6 +35,11 @@ public class PizzaBoardService {
                 .orElseThrow(NoSuchElementException::new);
     }
 
+    public PizzaBoard getPizzaBoardBy(Integer id) {
+        return this.pizzaBoardRepository.findById(id)
+                .orElseThrow(NoSuchElementException::new);
+    }
+
     public void update(Integer id, PizzaBoardPayload payload) {
         PizzaBoard pizzaBoard = this.processPayload(payload);
         pizzaBoard.setId(id);
@@ -47,6 +52,7 @@ public class PizzaBoardService {
 
     private PizzaBoard processPayload(PizzaBoardPayload payload) {
         PizzaBoard pizzaBoard = new PizzaBoard();
+        pizzaBoard.setName(payload.name());
         pizzaBoard.setIngredients(StreamSupport.stream(this.ingredientsRepository.findAll().spliterator(), false)
                 .filter(ingredient -> payload.ingredients().contains(ingredient.getName()))
                 .toList());

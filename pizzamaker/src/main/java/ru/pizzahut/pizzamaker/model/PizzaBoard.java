@@ -19,6 +19,9 @@ public class PizzaBoard {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "name")
+    private String name;
+
     @ManyToMany
     @JoinTable(
             name = "t_pizza_board_ingredients",
