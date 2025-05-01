@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../commonstyles.css">
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../mainpage/mainpage.html">Меню пиццерии</a></h1>
+        <h1><a href="../adminpanel/adminpanel.html">Менеджмент</a></h1>
+        <h1><a href="../cart/cart.html">Корзина</a></h1>
+    </div>
+    <div id="price"></div>
+    <div id="pizzas-container"></div>
+
+    <button id="make-order">Сделать заказ</button>
+
+    <div id="modal-window" class="modal">
+        <h3 class="modal-text">Доставим как можно скорее или в указанное Вами время</h3>
+        <input id="date" type="date">
+        <input id="time" type="time">
+        <textarea id="comment" placeholder="Добавьте комментарий к заказу"></textarea>
+        <button id="submit-order" class="button">Сделать заказ</button>
+    </div>
+
+    <script src="cart.js"></script>
+</body>
+</html>

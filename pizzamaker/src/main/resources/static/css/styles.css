@@ -1,0 +1,55 @@
+.pizza-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px;
+    max-width: 300px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pizza-card h3 {
+    margin-top: 0;
+    color: #e74c3c;
+}
+
+.price {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin: 8px 0;
+}
+
+.ingredients ul {
+    padding-left: 20px;
+}
+
+.add-to-cart {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 12px;
+}
+
+.add-to-cart:hover {
+    background-color: #c0392b;
+}
+
+#pizzas-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.error-message {
+    color: red;
+    padding: 20px;
+    text-align: center;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
