@@ -7,7 +7,7 @@ CREATE TABLE ordering.t_pizza_order
     date    timestamp without time zone,
     status  varchar(50)    not null,
     comment varchar(500),
-    price   decimal(10, 2) not null
+    price   decimal(10, 2)
 );
 
 CREATE INDEX idx_order_user ON ordering.t_pizza_order (user_id);
@@ -20,8 +20,10 @@ CREATE TABLE ordering.t_pizza_for_order
     name     varchar(100) not null,
     size     varchar(10)  not null,
     board_id int,
+    base_id int,
     constraint fk_pizza_order foreign key (order_id) references ordering.t_pizza_order (id) on delete cascade,
-    constraint fk_pizza_board foreign key (board_id) references pizza.t_pizza_boards (id) on delete cascade
+    constraint fk_pizza_board foreign key (board_id) references pizza.t_pizza_boards (id) on delete cascade,
+    constraint fk_pizza_base foreign key (base_id) references pizza.t_pizza_bases(id) on delete cascade
 );
 
 CREATE INDEX idx_pizza_for_order_order ON ordering.t_pizza_for_order (order_id);
