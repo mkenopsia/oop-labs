@@ -2,7 +2,7 @@ CREATE SCHEMA IF NOT EXISTS ordering;
 
 CREATE TABLE ordering.t_pizza_order
 (
-    id      serial primary key,
+    id      uuid primary key,
     user_id int            not null,
     date    timestamp without time zone,
     status  varchar(50)    not null,
@@ -16,7 +16,7 @@ CREATE INDEX idx_order_status ON ordering.t_pizza_order (status);
 CREATE TABLE ordering.t_pizza_for_order
 (
     id       serial primary key,
-    order_id int          not null,
+    order_id uuid          not null,
     name     varchar(100) not null,
     size     varchar(10)  not null,
     board_id int,
