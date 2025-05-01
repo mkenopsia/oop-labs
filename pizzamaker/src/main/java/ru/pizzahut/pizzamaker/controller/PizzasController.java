@@ -11,7 +11,7 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.pizzahut.pizzamaker.controller.payload.PizzaPayload;
-import ru.pizzahut.pizzamaker.service.PizzaService;
+import ru.pizzahut.pizzamaker.service.api.PizzaService;
 
 @Controller
 @RequiredArgsConstructor
@@ -30,7 +30,12 @@ public class PizzasController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping
+    @GetMapping("/{filter:.+}")
+    public ResponseEntity<?> getPizzasWithIngredientsMatchingFilter(@PathVariable("filter") String filter) {
+        return ResponseEntity.ok().body(this.pizzaService.getFilteredPizzas(filter));
+    }
+
+    @GetMapping()
     public ResponseEntity<?> getAllPizzas() {
         return ResponseEntity.ok().body(this.pizzaService.getAllPizzas());
     }

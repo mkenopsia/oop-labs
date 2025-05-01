@@ -1,10 +1,13 @@
 package ru.pizzahut.pizzamaker.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.pizzahut.pizzamaker.controller.payload.PizzaBasePayload;
-import ru.pizzahut.pizzamaker.service.PizzaBaseService;
+import ru.pizzahut.pizzamaker.service.api.PizzaBaseService;
+import ru.pizzahut.pizzamaker.service.impl.DefaultPizzaBaseService;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,5 +32,12 @@ public class PizzaBaseController {
     @GetMapping()
     public ResponseEntity<?> getPizzabase(@PathVariable("pizzabaseId") Integer id) {
         return ResponseEntity.ok().body(this.pizzaBaseService.findPizzaBaseById(id));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    private ResponseEntity<?> handleInvalidPizzaBoardPriceCase(IllegalArgumentException exception) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problemDetail.setProperty("message", exception.getMessage());
+        return ResponseEntity.badRequest().body(problemDetail);
     }
 }

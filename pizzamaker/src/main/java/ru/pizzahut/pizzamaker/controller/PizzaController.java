@@ -11,7 +11,7 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.pizzahut.pizzamaker.controller.payload.PizzaPayload;
-import ru.pizzahut.pizzamaker.service.PizzaService;
+import ru.pizzahut.pizzamaker.service.api.PizzaService;
 
 import java.util.Map;
 

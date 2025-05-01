@@ -4,7 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.pizzahut.pizzamaker.controller.payload.PizzaBoardPayload;
-import ru.pizzahut.pizzamaker.service.PizzaBoardService;
+import ru.pizzahut.pizzamaker.service.api.PizzaBoardService;
+import ru.pizzahut.pizzamaker.service.impl.DefaultPizzaBoardService;
 
 import java.util.Map;
 

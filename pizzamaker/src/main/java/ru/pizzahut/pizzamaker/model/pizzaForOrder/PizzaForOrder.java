@@ -6,9 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.pizzahut.pizzamaker.model.Ingredient;
+import ru.pizzahut.pizzamaker.model.PizzaBase;
 import ru.pizzahut.pizzamaker.model.PizzaBoard;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -29,10 +31,16 @@ public class PizzaForOrder {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private PizzaBoard board;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "base_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private PizzaBase pizzaBase;
+
     @Column(name = "order_id")
-    private Integer orderId;
+    private UUID orderId;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

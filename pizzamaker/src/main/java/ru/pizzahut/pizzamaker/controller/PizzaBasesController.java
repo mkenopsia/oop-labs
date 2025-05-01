@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.pizzahut.pizzamaker.controller.payload.PizzaBasePayload;
-import ru.pizzahut.pizzamaker.service.PizzaBaseService;
+import ru.pizzahut.pizzamaker.service.api.PizzaBaseService;
+import ru.pizzahut.pizzamaker.service.impl.DefaultPizzaBaseService;
 
 @Controller
 @RequiredArgsConstructor
