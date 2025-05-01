@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="../commonstyles.css">
+    <title>Ингредиенты</title>
+    <style>
+        #ingredient-list {
+            margin-top: 20px;
+        }
+
+        .ingredient-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .ingredient-buttons button {
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body style="padding: 20px;">
+    <div class="header">
+        <h1><a href="../mainpage/mainpage.html">Меню пиццерии</a></h1>
+        <h1><a href="../adminpanel/adminpanel.html">Менеджмент</a></h1>
+        <h1><a href="../cart/cart.html">Корзина</a></h1>
+    </div>
+    
+    <h2>Список ингредиентов</h2>
+
+    <button id="add-ingredient">Добавить ингредиент</button>
+
+    <div id="ingredient-list"></div>
+
+    <div id="modal-window" class="modal">
+        <input id="name-input">
+        <input id="price-input">
+        <button id="edit">Редактировать</button>
+        <button id="cancel">Отменить</button>
+    </div>
+
+    <div id="modal-window-creating" class="modal">
+        <input id="name-input-creating">
+        <input id="price-input-creating">
+        <button id="create">Создать</button>
+        <button id="cancel-creating">Отменить</button>
+    </div>
+
+    <script>
+        let modalWindow = document.getElementById("modal-window");
+        let modalWindowCreating = document.getElementById("modal-window-creating");
+        document.getElementById("cancel").addEventListener("click", () => {modalWindow.style.display = 'none'});
+        document.getElementById("edit").addEventListener("click", editIngredient);
+
+        document.getElementById("cancel-creating").addEventListener("click", () => {modalWindowCreating.style.display = 'none'});
+        document.getElementById("create").addEventListener("click", createIngredient);
+
+        let tempId = 0;
+
+        function editIngredient() {
+            let newIngredient = {name: document.getElementById("name-input").value, price: document.getElementById("price-input").value}
+            ingredientService.editIngredient(tempId, newIngredient);
+            console.log(newIngredient);
+            tempId = 0;
+        }
+
+        function createIngredient() {
+            let newIngredient = {name: document.getElementById("name-input-creating").value, price: document.getElementById("price-input-creating").value}
+            ingredientService.createIngredient(newIngredient);
+            console.log(newIngredient);
+        }
+
+        // добавляем
+        document.getElementById("add-ingredient").onclick = () => {
+            modalWindowCreating.style.display = 'flex';
+        };
+
+        class Ingredient {
+            constructor(id, name, price) {
+                this.id = id;
+                this.name = name;
+                this.price = price;
+            }
+
+            static fromJson(json) {
+                return new Ingredient(json.id, json.name, json.price);
+            }
+        }
+
+        class IngredientApiService {
+            constructor() {
+                this.ingredients = [];
+            }
+
+            async fetchIngredients() {
+                try {
+                    const response = await fetch('http://localhost:8080/pizzamaker/ingredients');
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const ingredientsJson = await response.json();
+                    this.ingredients = ingredientsJson.map(Ingredient.fromJson);
+                    renderIngredients();
+                } catch (error) {
+                    console.error('Ошибочка при загрузке ингредиентов', error);
+                    throw error;
+                }
+            }
+
+            getIngredientById(id) {
+                return this.ingredients.find(ingr => ingr.id === id);
+            }
+
+            getIngredientByName(name) {
+                return this.ingredients.find(ingr => ingr.name === name);
+            }
+
+            getAllIngredients() {
+                return this.ingredients;
+            }
+
+            async editIngredient(id, newIngredient) {
+                try {
+                    const response = await fetch(`http://localhost:8080/pizzamaker/ingredient/${id}`, {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(newIngredient)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Ошибочка: ${response.message}`);
+                    }
+                    
+                    modalWindow.style.display = 'none'
+                    renderIngredients();
+
+                } catch (error) {
+                    console.error("Ошибочка при редактировании ", error);
+                }
+            }
+
+            async createIngredient(newIngredient) {
+                try {
+                    const response = await fetch(`http://localhost:8080/pizzamaker/ingredients`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(newIngredient)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Ошибочка: ${response.message}`);
+                    }
+                    
+                    modalWindowCreating.style.display = 'none'
+                    renderIngredients();
+
+                } catch (error) {
+                    console.error("Ошибочка при добавлении ", error);
+                }
+            }
+
+            async deleteIngredient(id) {
+                try {
+                    const response = await fetch(`http://localhost:8080/pizzamaker/ingredient/${id}`, {
+                        method: "DELETE"
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Ошибочка при удалении ${response.message}`);
+                    }
+
+                    this.ingredients = this.ingredients.filter(ingr => ingr.id !== id);
+                    renderIngredients();
+
+                } catch (error) {
+                    console.error("Ошибочка при удалении ", error);
+                    alert("Не удалось удалить ингредиент.");
+                }
+            }
+        }   
+
+        const ingredientService = new IngredientApiService();
+
+        function renderIngredients() {
+            const container = document.getElementById("ingredient-list");
+            container.innerHTML = "";
+
+            ingredientService.getAllIngredients().forEach(ingredient => {
+                const div = document.createElement("div");
+                div.classList.add("ingredient-item");
+
+                const info = document.createElement("div");
+                info.classList.add("ingredient-info");
+                info.textContent = `${ingredient.name}: ${ingredient.price} руб`;
+
+                const buttonsDiv = document.createElement("div");
+                buttonsDiv.classList.add("ingredient-buttons");
+
+                // редачим
+                const edit = document.createElement("button");
+                edit.textContent = "Редактировать";
+                edit.onclick = () => {
+                    modalWindow.style.display = 'flex';
+                    document.getElementById("name-input").value = `${ingredient.name}`;
+                    document.getElementById("price-input").value = `${ingredient.price}`;
+                    tempId = ingredient.id;
+                };
+
+                // удаляем
+                const deletor = document.createElement("button");
+                deletor.textContent = "Удалить";
+                deletor.onclick = () => {
+                    ingredientService.deleteIngredient(ingredient.id);
+                };
+
+                buttonsDiv.appendChild(edit);
+                buttonsDiv.appendChild(deletor);
+
+                div.appendChild(info);
+                div.appendChild(buttonsDiv);
+
+                container.appendChild(div);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded",() => {
+            ingredientService.fetchIngredients();
+        });
+    </script>
+</body>
+</html>
