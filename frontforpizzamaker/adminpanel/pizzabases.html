@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../commonstyles.css">
+    <title>Document</title>
+    <style>
+        #pizzabase-list {
+            margin-top: 20px;
+        }
+
+        .pizzabase-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .pizzabase-buttons button {
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../mainpage/mainpage.html">Меню пиццерии</a></h1>
+        <h1><a href="../adminpanel/adminpanel.html">Менеджмент</a></h1>
+        <h1><a href="../cart/cart.html">Корзина</a></h1>
+    </div>
+    <button id="create-pizza">Добавить основу в базу данных</button>
+
+    <div id="modal-window-custom-pizzabase" class="modal">
+        <h3 class="modal-text">Введите название бортика пиццы</h3>
+        <input id="custom-pizzaboard-name">
+        <h3 class="modal-text">Введите цену бортика</h3>
+        <input id="custom-pizzaboard-price">
+        <button id="edit-custom-pizzaboard-to-bd">Добавить</button>
+    </div>
+
+    <div id="modal-window-add" class="modal">
+        <h3 class="modal-text">Введите название бортика пиццы</h3>
+        <input id="pizzaboard-name-add">
+        <h3 class="modal-text">Введите цену бортика</h3>
+        <input id="pizzaboard-price-add">
+        <button id="add-custom-pizzaboard-to-bd">Добавить</button>
+    </div>
+
+    <div id="pizzabase-list"></div>
+
+    <script>
+        const modalWindow = document.getElementById("modal-window-custom-pizzabase");
+        const addModalWindow = document.getElementById("modal-window-add");
+
+        document.getElementById("create-pizza").addEventListener("click", () => {
+            addModalWindow.style.display = 'flex'
+        });
+
+        document.getElementById("add-custom-pizzaboard-to-bd").addEventListener("click", addPizzaToDB);
+
+        function addPizzaToDB() {
+            let type = document.getElementById("pizzaboard-name-add").value;
+            let price = parseFloat(document.getElementById("pizzaboard-price-add").value);
+            pizzaBaseService.addPizzaBase(new PizzaBase(0, type, price));
+
+            addModalWindow.style.display = 'none';
+        }
+
+        let temp = null;
+        document.getElementById("edit-custom-pizzaboard-to-bd").addEventListener("click", edit);
+
+        function edit() {
+            let type = document.getElementById("custom-pizzaboard-name").value;
+            let price = parseFloat(document.getElementById("custom-pizzaboard-price").value);
+            let pizzaBase = new PizzaBase(temp, type, price);
+            pizzaBaseService.updatePizzaBase(pizzaBase);
+            modalWindow.style.display = 'none';
+            temp = null;
+        }
+
+        class PizzaBase {
+            constructor(id, type, price) {
+                this.id = id;
+                this.type = type;
+                this.price = price;
+            }
+        
+            static fromJson(json) {
+                return new PizzaBase(json.id, json.type, json.price);
+            }
+        }
+
+        class PizzaBaseApiService {
+            constructor() {
+                this.pizzaBases = [];
+            }
+        
+            async fetchPizzaBases() {
+                try {
+                    const response = await fetch('http://localhost:8080/pizzamaker/pizzabases');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const pizzaBasesJson = await response.json();
+                this.pizzaBases = pizzaBasesJson.map(PizzaBase.fromJson);
+                renderPizzaBases();
+                return this.pizzaBases;
+                
+                } catch (error) {
+                    console.error('Ошибка при загрузке пицц:', error);
+                    throw error;
+                }
+            }
+
+            async addPizzaBase(pizzaBase) {
+                try {
+                    const response = await fetch(`http://localhost:8080/pizzamaker/pizzabases`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(pizzaBase)
+                    });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                this.fetchPizzaBases();
+                renderPizzaBases();
+                
+                } catch (error) {
+                    console.error('Ошибка при загрузке пицц:', error);
+                    throw error;
+                }
+            }
+
+            async updatePizzaBase(pizzaBase) {
+                try {
+                    const response = await fetch(`http://localhost:8080/pizzamaker/pizzabase/${pizzaBase.id}`, {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(pizzaBase)
+                    });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                this.fetchPizzaBases();
+                renderPizzaBases();
+                
+                } catch (error) {
+                    console.error('Ошибка при загрузке пицц:', error);
+                    throw error;
+                }
+            }
+
+            async deletePizzaBase(id) {
+                try {
+                    const response = await fetch(`http://localhost:8080/pizzamaker/pizzabase/${id}`, {
+                        method: "DELETE"
+                    });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                this.fetchPizzaBases();
+                renderPizzaBases();
+                
+                } catch (error) {
+                    console.error('Ошибка при загрузке пицц:', error);
+                    throw error;
+                }
+            }
+        
+            getPizzaBaseById(id) {
+                return this.pizzaBases.find(pizza => pizza.id === id);
+            }
+
+            getPizzaBaseByType(type) {
+                return this.pizzaBases.find(pizza => pizza.type === type);
+            }
+
+            getAllPizzaBases() {
+                return this.pizzaBases;
+            }
+        }
+
+        function renderPizzaBases() {
+            const container = document.getElementById("pizzabase-list");
+            container.innerHTML = "";
+
+            pizzaBaseService.getAllPizzaBases().forEach(pizzabase => {
+                const div = document.createElement("div");
+                div.classList.add("pizzabase-item");
+
+                const info = document.createElement("div");
+                info.classList.add("pizzabase-info");
+                info.textContent = `${pizzabase.type}: ${pizzabase.price} руб`;
+
+                const buttonsDiv = document.createElement("div");
+                buttonsDiv.classList.add("pizzabase-buttons");
+
+                // редачим
+                const edit = document.createElement("button");
+                edit.textContent = "Редактировать";
+                edit.onclick = () => {
+                    modalWindow.style.display = 'flex';
+                    document.getElementById("custom-pizzaboard-name").value = `${pizzabase.type}`;
+                    document.getElementById("custom-pizzaboard-price").value = `${pizzabase.price}`;
+                    temp = pizzabase.id;
+                };
+
+                // удаляем
+                const deletor = document.createElement("button");
+                deletor.textContent = "Удалить";
+                deletor.onclick = () => {
+                    pizzaBaseService.deletePizzaBase(pizzabase.id);
+                };
+
+                buttonsDiv.appendChild(edit);
+                buttonsDiv.appendChild(deletor);
+
+                div.appendChild(info);
+                div.appendChild(buttonsDiv);
+
+                container.appendChild(div);
+            });
+        }
+
+        const pizzaBaseService = new PizzaBaseApiService();
+
+        document.addEventListener("DOMContentLoaded",() => {
+            pizzaBaseService.fetchPizzaBases();
+        });
+
+    </script>
+
+</body>
+</html>
