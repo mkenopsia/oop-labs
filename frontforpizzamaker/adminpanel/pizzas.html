@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../commonstyles.css">
+    <title>Document</title>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../mainpage/mainpage.html">Меню пиццерии</a></h1>
+        <h1><a href="../adminpanel/adminpanel.html">Менеджмент</a></h1>
+        <h1><a href="../cart/cart.html">Корзина</a></h1>
+    </div>
+    <button id="create-pizza">Добавить пиццу в базу данных</button>
+
+    <div id="modal-window-custom-pizza" class="modal">
+        <h3 class="modal-text">Введите название Вашей пиццы</h3>
+        <input id="custom-pizza-name">
+        <ul id="ingredient-list" style="max-height: 300px; overflow-y: auto;"></ul>
+        <label>Бортик</label>
+        <select id="custom-pizza-board">
+        </select>
+        <label>Основа</label>
+        <select id="custom-pizza-base">
+        </select>
+        <label>Размер</label>
+        <select id="custom-pizza-size-input">
+            <option value="30см">По умолчанию - 30см</option>
+            <option value="25см">25см</option>
+            <option value="35см">35см</option>
+        </select>
+        <button id="add-custom-pizza-to-bd">Добавить в корзину</button>
+    </div>
+
+    <script>
+        let ingredientService = null;
+        let pizzaBaseService = null;
+        let pizzaBoardService = null;
+        let pizzaService = null;
+        document.addEventListener("DOMContentLoaded", async () => {
+            ingredientService = new IngredientApiService();
+            pizzaBaseService = new PizzaBaseApiService();
+            pizzaBoardService = new PizzaBoardApiService();
+            pizzaService = new PizzaApiService();
+
+            const boards = await pizzaBoardService.fetchPizzaBoards();
+            console.log('Загружены бортики:', boards);
+
+            const ingredients = await ingredientService.fetchIngredients();
+            console.log('Загружены ингредиенты: ', ingredients)
+
+            const pizzaBases = await pizzaBaseService.fetchPizzaBases();
+            console.log('Загружены основы пицц: ', pizzaBases)
+        });
+
+        class Pizza {
+            constructor(id, name, ingredients, ingredientNames, pizzaBase, price) {
+                this.id = id;
+                this.name = name;
+                this.ingredients = ingredients;
+                this.ingredientNames = ingredientNames;
+                this.pizzaBase = pizzaBase;
+                this.price = price;
+                this.size = '';
+                this.pizzaBoard = null;
+                this.base = '';
+            }
+        
+            static fromJson(json) {
+                let ingrNames = []
+                for(let ingr of json.ingredients.map(Ingredient.fromJson)) {
+                    ingrNames.push(ingr.name);
+                }
+                return new Pizza(
+                    json.id,
+                    json.name,
+                    json.ingredients.map(Ingredient.fromJson),
+                    ingrNames,
+                    PizzaBase.fromJson(json.pizzaBase),
+                    json.price
+                );
+            }
+        }
+        
+        class PizzaApiService {
+            constructor() {
+                this.pizzas = [];
+            }
+        
+            async fetchPizzas() {
+                try {
+                    const response = await fetch('http://localhost:8080/pizzamaker/pizzas');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const pizzasJson = await response.json();
+                this.pizzas = pizzasJson.map(Pizza.fromJson);
+                return this.pizzas;
+                
+                } catch (error) {
+                    console.error('Ошибка при загрузке пицц:', error);
+                    throw error;
+                }
+            }
+
+            async savePizza(pizza) {
+                try {
+                    const response = await fetch('http://localhost:8080/pizzamaker/pizzas', {
+                        method:'POST',
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(pizza)
+                    });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                } catch (error) {
+                    console.error('Ошибочка при сохранении', error);
+                }
+            }
+        }
+
+        class PizzaBoard {
+            constructor(id, name, availablePizzaIds, price) {
+                this.id = id;
+                this.name = name;
+                this.availablePizzaIds = availablePizzaIds;
+                this.price = price;
+            }
+        
+            static fromJson(json) {
+                return new PizzaBoard(json.id, json.name, json.availablePizzaIds, json.price);
+            }
+        }
+
+        class PizzaBoardApiService {
+            constructor(baseUrl = 'http://localhost:8080/pizzamaker') {
+                this.baseUrl = baseUrl;
+                this.boards = [];
+            }
+        
+            async fetchPizzaBoards() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/pizzaboards`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const boardsJson = await response.json();
+                this.boards = boardsJson.map(PizzaBoard.fromJson);
+                return this.boards;
+                
+                } catch (error) {
+                    console.error('Ошибка при загрузке основ пицц:', error);
+                    throw error;
+                }
+            }
+        
+            getPizzaBoardById(id) {
+                return this.boards.find(board => board.id === id);
+            }
+
+            getPizzaBoardByName(name) {
+                return this.boards.find(board => board.name === name);
+            }
+
+            getAllPizzaBoards() {
+                return this.boards;
+            }
+        }
+
+        class PizzaBase {
+            constructor(id, type, price) {
+                this.id = id;
+                this.type = type;
+                this.price = price;
+            }
+        
+            static fromJson(json) {
+                return new PizzaBase(json.id, json.type, json.price);
+            }
+        }
+
+        class PizzaBaseApiService {
+            constructor() {
+                this.pizzaBases = [];
+            }
+        
+            async fetchPizzaBases() {
+                try {
+                    const response = await fetch('http://localhost:8080/pizzamaker/pizzabases');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const pizzaBasesJson = await response.json();
+                this.pizzaBases = pizzaBasesJson.map(PizzaBase.fromJson);
+                return this.pizzaBases;
+                
+                } catch (error) {
+                    console.error('Ошибка при загрузке пицц:', error);
+                    throw error;
+                }
+            }
+        
+            getPizzaBaseById(id) {
+                return this.pizzaBases.find(pizza => pizza.id === id);
+            }
+
+            getPizzaBaseByType(type) {
+                return this.pizzaBases.find(pizza => pizza.type === type);
+            }
+
+            getAllPizzaBases() {
+                return this.pizzaBases;
+            }
+        }
+
+        class Ingredient {
+            constructor(id, name, price) {
+            this.id = id;
+            this.name = name;
+            this.price = price;
+            }
+        
+            static fromJson(json) {
+            return new Ingredient(json.id, json.name, json.price);
+            }
+        }
+
+        class IngredientApiService {
+            constructor() {
+                this.ingredients = [];
+            }
+        
+            async fetchIngredients() {
+                try {
+                    const response = await fetch('http://localhost:8080/pizzamaker/ingredients');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const ingredientsJson = await response.json();
+                this.ingredients = ingredientsJson.map(Ingredient.fromJson);
+                return this.ingredients;
+                
+                } catch (error) {
+                    console.error('Ошибка при загрузке ингредиентов', error);
+                    throw error;
+                }
+            }
+        
+            getIngredientById(id) {
+                return this.ingredients.find(ingr => ingr.id === id);
+            }
+
+            getIngredientByName(name) {
+                return this.ingredients.find(ingr => ingr.name === name);
+            }
+
+            getAllIngredients() {
+                return this.ingredients;
+            }
+        }
+
+        let modalCustomPizzaWindow = document.getElementById("modal-window-custom-pizza");
+        document.getElementById("create-pizza").addEventListener("click", showModalCustomPizzaWindow);
+        document.getElementById("add-custom-pizza-to-bd").addEventListener("click", addCustomPizzaToBD);
+
+        let customPizzaIngredients = new Map();;
+
+        function showModalCustomPizzaWindow() {
+            modalCustomPizzaWindow.style.display = 'flex';
+            let nameInput = document.getElementById("custom-pizza-name");
+
+            let ingredientList = document.getElementById("ingredient-list");
+            ingredientList.innerHTML = '';
+
+            let ingredients = ingredientService.ingredients;
+
+            for(let i = 0; i < ingredients.length; i++) {
+                let ingr = ingredients[i];
+                const li = document.createElement("li");
+
+                let count = 0;
+
+                let nameSpan = document.createElement("span");
+                nameSpan.textContent = ingr.name;
+
+                let controls = document.createElement("div");
+                controls.className = "counter-controls";
+
+                let countSpan = document.createElement("span");
+                countSpan.className = "counter";
+                countSpan.textContent = count;
+
+                let minusBtn = document.createElement("button");
+                minusBtn.textContent = "-";
+                minusBtn.addEventListener("click", () => {
+                    if (count > 0) {
+                        count--;
+                        countSpan.textContent = count;
+                        if(count === 0) {
+                            customPizzaIngredients.delete(ingr.name);
+                        } else {
+                            customPizzaIngredients.set(ingr.name, count);
+                        }
+                    }
+                });
+
+                let plusBtn = document.createElement("button");
+                plusBtn.textContent = "+";
+                plusBtn.addEventListener("click", () => {
+                    count++;
+                    countSpan.textContent = count;
+                    customPizzaIngredients.set(ingr.name, count);
+                });
+
+                controls.appendChild(minusBtn);
+                controls.appendChild(countSpan);
+                controls.appendChild(plusBtn);
+
+                li.appendChild(nameSpan);
+                li.appendChild(controls);
+                ingredientList.appendChild(li);
+            }
+
+
+            let boardInput = document.getElementById("custom-pizza-board")
+            boardInput.innerHTML = '';
+            let standartOption = document.createElement("option")
+            standartOption.value = "Стандартный";
+            standartOption.textContent = "Стандартный";
+            boardInput.appendChild(standartOption);
+
+            for(const board of pizzaBoardService.getAllPizzaBoards()) {
+                let option = document.createElement("option");
+                option.value = board.id;
+                option.textContent = board.name + " " + board.price + " руб";
+                boardInput.appendChild(option);
+            }
+
+            let baseInput = document.getElementById("custom-pizza-base")
+            baseInput.innerHTML = '';
+
+            for(const base of pizzaBaseService.getAllPizzaBases()) {
+                let option = document.createElement("option");
+                option.value = base.type;
+                option.textContent = base.type + " " + base.price + " руб";
+                baseInput.appendChild(option);
+            }
+
+            modalCustomPizzaWindow.style.display='flex';
+        }
+
+        function addCustomPizzaToBD() {
+            let nameInput = document.getElementById("custom-pizza-name").value;
+            if(nameInput === null || nameInput.trim() === '') {
+                alert("Добавьте название для Вашей пиццы");
+            }
+
+            if(customPizzaIngredients.size < 1) {
+                alert("Добавьте больше ингредиентов");
+            }
+
+            let size = document.getElementById("custom-pizza-size-input").value;
+            let inputBoardId = parseInt(document.getElementById("custom-pizza-board").value);
+            let inputBase = document.getElementById("custom-pizza-base").value;
+            let board = pizzaBoardService.getAllPizzaBoards().find(b  => b.id === inputBoardId);
+            let pizzaBase = pizzaBaseService.getPizzaBaseByType(inputBase);
+
+            let ingrNames = []
+
+            for(const [key, value] of customPizzaIngredients) {
+                let name = '';
+                if(value > 1) {
+                    name = key + ' x' + value;
+                } else {
+                    name = key;
+                }
+                ingrNames.push(name);
+            }
+
+            let pizza = new Pizza();
+            pizza.id = Math.floor(Math.random()*1000) + 200;
+            pizza.name = nameInput;
+            pizza.ingredients = ingrNames;
+            pizza.size = size;
+            pizza.base = pizzaBase.type;
+            
+            if(board === undefined) {
+                pizza.pizzaBoard = {name : "Стандартный", price: 0, id: null};
+            } else {
+                pizza.pizzaBoard = board;
+            }
+
+            pizza.price = (evalPrice(customPizzaIngredients) + pizzaBase.price + pizza.pizzaBoard.price) * ((size === "25см") ? 0.9 : ((size === "35см") ? 1.2 : 1));
+
+            console.log(pizza);
+
+            pizzaService.savePizza(pizza);
+
+            modalCustomPizzaWindow.style.display = 'none'
+        }
+
+        function evalPrice(customPizzaIngredients) {
+            let price = 0;
+            for(const [key, value] of customPizzaIngredients) {
+                const ingr = ingredientService.getIngredientByName(key);
+                price += ingr.price * value;
+            }
+            return price;
+        }
+    </script>
+</body>
+</html>

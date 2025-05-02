@@ -1,21 +1,24 @@
 package ru.pizzahut.pizzamaker.model.pizzaForOrder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import ru.pizzahut.pizzamaker.model.Ingredient;
 import ru.pizzahut.pizzamaker.model.PizzaBase;
 import ru.pizzahut.pizzamaker.model.PizzaBoard;
+import ru.pizzahut.pizzamaker.model.order.Order;
 
 import java.util.List;
-import java.util.UUID;
 
+@Entity
 @Getter
 @Setter
 @NoArgsConstructor
-@Entity
 @Table(schema = "ordering", name = "t_pizza_for_order")
 public class PizzaForOrder {
 
@@ -39,8 +42,11 @@ public class PizzaForOrder {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private PizzaBase pizzaBase;
 
-    @Column(name = "order_id")
-    private UUID orderId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "order_id", nullable = false)
+    @JsonIgnore
+    private Order pizzaOrder;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -51,5 +57,4 @@ public class PizzaForOrder {
     )
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private List<Ingredient> ingredients;
-
 }

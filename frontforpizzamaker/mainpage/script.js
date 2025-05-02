@@ -97,16 +97,6 @@ class Pizza {
         json.price
         );
     }
-  
-    getInfo() {
-        return {
-            id: this.id,
-            name: this.name,
-            ingredients: this.ingredients,
-            pizzaBase: this.pizzaBase,
-            price: this.price
-        };
-    }
 }
   
 class PizzaApiService {

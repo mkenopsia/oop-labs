@@ -9,7 +9,6 @@ import ru.pizzahut.pizzamaker.model.pizzaForOrder.PizzaForOrder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,8 +37,11 @@ public class Order {
     @Column(name = "price")
     private Double price;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.REMOVE,
+            mappedBy = "pizzaOrder"
+    )
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private List<PizzaForOrder> pizzasForOrder = new ArrayList<>();
 }

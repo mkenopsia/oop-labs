@@ -13,8 +13,11 @@ import ru.pizzahut.pizzamaker.model.pizzaForOrder.PizzaForOrder;
 import ru.pizzahut.pizzamaker.repo.*;
 import ru.pizzahut.pizzamaker.service.api.OrderingService;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +32,49 @@ public class DefaultOrderingService implements OrderingService {
 
     @Override
     public Iterable<Order> getAllOrders() {
-        Iterable<Order> res =  this.orderRepository.findAll();
-        return res;
+        return this.orderRepository.findAll();
+    }
+
+    @Override
+    public Iterable<Order> getFilteredByStatusOrders(String orderStatus) {
+        Iterable<Order> orders = this.orderRepository.findAll();
+        return StreamSupport.stream(orders.spliterator(), false)
+                .filter(order -> order.getStatus().equals(orderStatus))
+                .toList();
+    }
+
+    @Override
+    public Iterable<Order> getFilteredByDateOrders(String date) {
+        LocalDate dateFromPath = LocalDate.parse(date);
+        LocalDateTime start = dateFromPath.atStartOfDay();
+        LocalDateTime end = dateFromPath.plusDays(1).atStartOfDay();
+        return this.orderRepository.findAllByDate(start, end);
+    }
+
+    @Override
+    public Iterable<Order> getFilteredOrders(String orderStatus, String date) {
+        if((orderStatus != null && !orderStatus.isEmpty()) && (date == null || date.isEmpty())) {
+            return this.getFilteredByStatusOrders(orderStatus);
+        }
+        else if ((orderStatus == null || orderStatus.isEmpty()) && (date != null && !date.isEmpty())) {
+            return this.getFilteredByDateOrders(date);
+        }
+
+        return StreamSupport.stream(getFilteredByDateOrders(date).spliterator(), false)
+                .filter(order -> order.getStatus().equals(orderStatus))
+                .toList();
+    }
+
+    @Override
+    public void deleteOrderById(UUID id) {
+        this.orderRepository.deleteById(id);
+    }
+
+    @Override
+    public void updateOrder(UUID id, OrderPayload payload) {
+        Order order = this.orderRepository.findById(id).orElseThrow(NoClassDefFoundError::new);
+        order.setStatus(payload.status());
+        this.orderRepository.save(order);
     }
 
     @Override
@@ -52,6 +96,7 @@ public class DefaultOrderingService implements OrderingService {
 
         for(var pizzaForOrderPayload : payload.pizzasForOrder()) {
             PizzaForOrder pizzaForOrder = this.processPizzaPayload(pizzaForOrderPayload, id, price);
+            pizzaForOrder.setPizzaOrder(order);
             this.pizzasForOrderRepository.save(pizzaForOrder);
             pizzasForOrder.add(pizzaForOrder);
         }
@@ -114,7 +159,6 @@ public class DefaultOrderingService implements OrderingService {
         pizzaForOrder.setPizzaBase(pizzaBase);
 
         pizzaForOrder.setSize(payload.size());
-        pizzaForOrder.setOrderId(id);
 
         Pizza pizza = this.pizzaRepository.findById(payload.id()).orElse(null);
         if(pizza != null) {

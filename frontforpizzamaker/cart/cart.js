@@ -136,8 +136,7 @@ function makeOrder() {
 }
 
 function fetchOrder(orderJson) {
-    fetch("http://localhost:8080/pizzamaker/make-order", 
-        {
+    fetch("http://localhost:8080/pizzamaker/make-order", {
             method:'POST',
             headers: {
                 "Content-Type": "application/json"

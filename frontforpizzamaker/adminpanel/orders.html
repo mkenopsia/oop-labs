@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../commonstyles.css">
+    <title>Document</title>
+    <style>
+        #order-list {
+            margin-top: 20px;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .order-buttons button {
+            margin-left: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1><a href="../mainpage/mainpage.html">Меню пиццерии</a></h1>
+        <h1><a href="../adminpanel/adminpanel.html">Менеджмент</a></h1>
+        <h1><a href="../cart/cart.html">Корзина</a></h1>
+    </div>
+
+    <div class="search-filter-container">
+        <input id="status-filter" class="filter-input" placeholder="Отфильровать по статусу">
+        <input id="date-filter" type="date">
+        <button id="do-status-filter">Отфильтровать</button>
+    </div>
+    
+    <h2>Список заказов</h2>
+
+    <div id="order-list"></div>
+
+    <script>
+        document.getElementById("do-status-filter").addEventListener("click", filter);
+
+        function filter() {
+            const status = document.getElementById("status-filter").value;
+            const date = document.getElementById("date-filter").value;
+            if((status === null || status.trim() === "") && (date === null || date.trim() === "")) {
+                orderService.fetchOrders();
+                return;
+            }
+            orderService.filterOrders(status, date);
+        }
+
+        class PizzaForOrder {
+            constructor(id, name, size, pizzaBoardId, pizzaBaseId, ingredients) {
+                this.id = id;
+                this.name = name;
+                this.size = size;
+                this.pizzaBoardId = pizzaBoardId;
+                this.pizzaBaseId = pizzaBaseId;
+                this.ingredients = ingredients;
+            }
+
+            static fromJson(json) {
+                return new PizzaForOrder(
+                    json.id,
+                    json.name,
+                    json.size,
+                    json.board?.id || null,
+                    json.pizzaBase?.id || null,
+                    json.ingredients
+                );
+            }
+        }
+
+        class Order {
+            constructor(id, userId, date, status, comment, price, pizzasForOrder) {
+                this.id = id
+                this.userId = userId;
+                this.date = date;
+                this.status = status;
+                this.comment = comment;
+                this.price = price;
+                this.pizzasForOrder = pizzasForOrder;
+            }
+
+            static fromJson(json) {
+                const pizzasForOrder = json.pizzasForOrder.map(PizzaForOrder.fromJson);
+                return new Order(
+                    json.id,
+                    json.userId,
+                    json.date,
+                    json.status,
+                    json.comment,
+                    json.price,
+                    pizzasForOrder
+                );
+            }
+        }
+
+        class OrderApiService {
+            constructor() {
+                this.orders = [];
+            }
+
+            async fetchOrders() {
+                try {
+                    const response = await fetch('http://localhost:8080/pizzamaker/make-order');
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const ordersJson = await response.json();
+                    this.orders = ordersJson.map(Order.fromJson);
+                    renderOrders(this.orders);
+
+                } catch (error) {
+                    console.error('Ошибка при загрузке заказов', error);
+                }
+            }
+
+            
+            async updateStatus(id, status) {
+                try {
+                    const response = await fetch(`http://localhost:8080/pizzamaker/make-order/${id}`, {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(status)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    this.fetchOrders();
+                    renderOrders(this.orders);
+
+                } catch (error) {
+                    console.error('Ошибкочка', error);
+                }
+            }
+
+            async deleteOrder(id) {
+                try {
+                    const response = await fetch(`http://localhost:8080/pizzamaker/make-order/${id}`, {
+                        method: "DELETE",
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    this.fetchOrders();
+                    renderOrders(this.orders);
+
+                } catch (error) {
+                    console.error('Ошибкочка', error);
+                }
+            }
+
+            async filterOrders(status, date) {
+                try {
+                    const response = await fetch(`http://localhost:8080/pizzamaker/make-order/filter?status=` + status + "&date=" + date, {
+                        method: "GET",
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const ordersJson = await response.json();
+                    this.orders = ordersJson.map(Order.fromJson);
+                    renderOrders(this.orders);
+
+                } catch (error) {
+                    console.error('Ошибкочка', error);
+                }
+            }
+        }
+
+        function renderOrders(orders) {
+            const container = document.getElementById("order-list");
+            container.innerHTML = "";
+
+            orders.forEach(order => {
+                const orderDiv = document.createElement("div");
+                orderDiv.classList.add("order-item");
+                orderDiv.innerHTML = `
+                    <h3>Заказ ID: ${order.id}</h3>
+                    <p>Дата: ${new Date(order.date).toLocaleString()}</p>
+                    <p>Статус: ${order.status}</p>
+                    <p>Цена: ${order.price} ₽</p>
+                    <h4>Пиццы:</h4>
+                `;
+
+                const pizzasList = document.createElement("ul");
+
+                order.pizzasForOrder.forEach(pizza => {
+                    const pizzaItem = document.createElement("li");
+                    pizzaItem.classList.add("pizza-item");
+
+                    const ingredientNames = pizza.ingredients.map(ingr => ingr.name).join(", ");
+
+                    pizzaItem.innerHTML = `
+                        <h4>${pizza.name}</h4> 
+                        Размер: ${pizza.size}<br>
+                        Ингредиенты: ${ingredientNames}
+                    `;
+
+                    pizzasList.appendChild(pizzaItem);
+                });
+
+                const buttonsDiv = document.createElement("div");
+                buttonsDiv.classList.add("ingredient-buttons");
+
+                // статус в работе
+                const inWork = document.createElement("button");
+                inWork.textContent = "Взять в работу";
+                inWork.onclick = () => {
+                    orderService.updateStatus(order.id, {status: "IN WORK"});
+                };
+                
+                // готовенький
+                const done = document.createElement("button");
+                done.textContent = "Заказ готов";
+                done.onclick = () => {
+                    orderService.updateStatus(order.id, {status: "DONE"});
+                };
+
+                // удаляем
+                const deletor = document.createElement("button");
+                deletor.textContent = "Удалить";
+                deletor.onclick = () => {
+                    orderService.deleteOrder(order.id);
+                };
+                
+
+                buttonsDiv.appendChild(done);
+                buttonsDiv.appendChild(inWork);
+                buttonsDiv.appendChild(deletor);
+                
+
+                orderDiv.appendChild(pizzasList);
+                container.appendChild(buttonsDiv);
+                container.appendChild(orderDiv);
+            });
+        }
+
+        const orderService = new OrderApiService();
+
+        window.onload = () => {
+            orderService.fetchOrders();
+        };
+    </script>
+</body>
+</html>
