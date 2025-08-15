@@ -1,11 +1,9 @@
-package ru.pizzahut.pizzamaker.model.order;
+package ru.pizzahut.pizzamaker.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.pizzahut.pizzamaker.model.pizzaForOrder.PizzaForOrder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,6 +40,6 @@ public class Order {
             cascade = CascadeType.REMOVE,
             mappedBy = "pizzaOrder"
     )
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+
     private List<PizzaForOrder> pizzasForOrder = new ArrayList<>();
 }

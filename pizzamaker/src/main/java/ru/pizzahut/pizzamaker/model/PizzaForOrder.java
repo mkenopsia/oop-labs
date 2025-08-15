@@ -1,4 +1,4 @@
-package ru.pizzahut.pizzamaker.model.pizzaForOrder;
+package ru.pizzahut.pizzamaker.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -8,10 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import ru.pizzahut.pizzamaker.model.Ingredient;
-import ru.pizzahut.pizzamaker.model.PizzaBase;
-import ru.pizzahut.pizzamaker.model.PizzaBoard;
-import ru.pizzahut.pizzamaker.model.order.Order;
 
 import java.util.List;
 

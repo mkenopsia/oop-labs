@@ -8,8 +8,8 @@ import ru.pizzahut.pizzamaker.model.Ingredient;
 import ru.pizzahut.pizzamaker.model.Pizza;
 import ru.pizzahut.pizzamaker.model.PizzaBase;
 import ru.pizzahut.pizzamaker.model.PizzaBoard;
-import ru.pizzahut.pizzamaker.model.order.Order;
-import ru.pizzahut.pizzamaker.model.pizzaForOrder.PizzaForOrder;
+import ru.pizzahut.pizzamaker.model.Order;
+import ru.pizzahut.pizzamaker.model.PizzaForOrder;
 import ru.pizzahut.pizzamaker.repo.*;
 import ru.pizzahut.pizzamaker.service.api.OrderingService;
 

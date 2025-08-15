@@ -1,4 +1,4 @@
-package ru.pizzahut.pizzamaker.controller;
+package ru.pizzahut.pizzamaker.controller.pizzaMaker;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.pizzahut.pizzamaker.controller.payload.PizzaBasePayload;
 import ru.pizzahut.pizzamaker.service.api.PizzaBaseService;
-import ru.pizzahut.pizzamaker.service.impl.DefaultPizzaBaseService;
 
 @RestController
 @RequiredArgsConstructor

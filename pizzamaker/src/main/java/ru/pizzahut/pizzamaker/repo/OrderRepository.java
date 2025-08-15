@@ -3,7 +3,7 @@ package ru.pizzahut.pizzamaker.repo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.pizzahut.pizzamaker.model.order.Order;
+import ru.pizzahut.pizzamaker.model.Order;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -1,7 +1,7 @@
 package ru.pizzahut.pizzamaker.service.api;
 
 import ru.pizzahut.pizzamaker.controller.payload.OrderPayload;
-import ru.pizzahut.pizzamaker.model.order.Order;
+import ru.pizzahut.pizzamaker.model.Order;
 
 import java.util.UUID;
 

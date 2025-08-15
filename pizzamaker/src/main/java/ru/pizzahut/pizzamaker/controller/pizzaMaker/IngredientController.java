@@ -1,4 +1,4 @@
-package ru.pizzahut.pizzamaker.controller;
+package ru.pizzahut.pizzamaker.controller.pizzaMaker;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

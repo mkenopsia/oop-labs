@@ -1,11 +1,10 @@
-package ru.pizzahut.pizzamaker.controller;
+package ru.pizzahut.pizzamaker.controller.pizzaMaker;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.pizzahut.pizzamaker.controller.payload.OrderPayload;
 import ru.pizzahut.pizzamaker.service.api.OrderingService;
-import ru.pizzahut.pizzamaker.service.impl.DefaultOrderingService;
 
 import java.util.Map;
 import java.util.UUID;

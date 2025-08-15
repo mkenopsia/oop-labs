@@ -1,7 +1,5 @@
 package ru.pizzahut.pizzamaker.controller.payload;
 
-import ru.pizzahut.pizzamaker.model.pizzaForOrder.PizzaForOrder;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
